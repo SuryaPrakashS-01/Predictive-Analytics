@@ -9,6 +9,7 @@ subprocess.check_call(["pip", "install",
     "ipywidgets", 
     "ipython"
 ])
+
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -45,7 +46,6 @@ def train_model(data):
     X = data[features]
     y = data[target]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
     model = RandomForestRegressor(random_state=42)
     model.fit(X_train, y_train)
     predictions = model.predict(X_test)
@@ -55,8 +55,8 @@ def train_model(data):
 usa_model, usa_r2 = train_model(df_usa)
 china_model, china_r2 = train_model(df_china)
 
-print(f"USA Model R² Score: {usa_r2:.2f}")
-print(f"China Model R² Score: {china_r2:.2f}")
+print(f"USA Model R\u00b2 Score: {usa_r2:.2f}")
+print(f"China Model R\u00b2 Score: {china_r2:.2f}")
 
 # Random Forest Future Prediction Function
 def predict_with_tariff(model, data, tariff_value, years_to_predict=3):
