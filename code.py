@@ -1,5 +1,14 @@
 import subprocess
-subprocess.check_call(["pip", "install", "scikit-learn"])
+
+# Install all necessary packages
+subprocess.check_call(["pip", "install", 
+    "pandas", 
+    "numpy", 
+    "scikit-learn", 
+    "matplotlib", 
+    "ipywidgets", 
+    "ipython"
+])
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
