@@ -1,11 +1,11 @@
-import streamlit as st # type: ignore
-import pandas as pd # type: ignore
-import numpy as np # type: ignore
-from sklearn.linear_model import LinearRegression # type: ignore
-from sklearn.ensemble import RandomForestRegressor # type: ignore
-from sklearn.model_selection import train_test_split # type: ignore
-from sklearn.metrics import r2_score # type: ignore
-import matplotlib.pyplot as plt # type: ignore
+import streamlit as st  # type: ignore
+import pandas as pd  # type: ignore
+import numpy as np  # type: ignore
+from sklearn.linear_model import LinearRegression  # type: ignore
+from sklearn.ensemble import RandomForestRegressor  # type: ignore
+from sklearn.model_selection import train_test_split  # type: ignore
+from sklearn.metrics import r2_score  # type: ignore
+import matplotlib.pyplot as plt  # type: ignore
 import os
 
 # Function to load data
@@ -44,7 +44,7 @@ def predict_rf_with_tariff(model, data, tariff_value, features, target, years_to
 
     repeated_features_df = pd.DataFrame([mean_features] * years_to_predict, columns=features)
     predicted_values = model.predict(repeated_features_df)
-    future_data_df[target] = predicted_values
+    future_data_df[target] = predicted_values / 1e9  # Convert to billions
     return future_data_df
 
 # Function for Linear Regression Prediction
@@ -53,12 +53,12 @@ def predict_lr_with_tariff(df, country, tariff_rate):
     y = df['Import Value (USD)']
     model = LinearRegression()
     model.fit(X, y)
+    last_year = df['Year'].max()
     future_years_df = pd.DataFrame({
-        'Year': [2025, 2026, 2027],
-        'Average Tariff Rate (%)': [tariff_rate]*3
+        'Year': [last_year + i for i in range(1, 4)],
+        'Average Tariff Rate (%)': [tariff_rate] * 3
     })
     predictions = model.predict(future_years_df)
-    future_years_df['Predicted Import Value'] = predictions
     return df['Year'], y, future_years_df['Year'], predictions, country
 
 # --- Streamlit App Layout ---
@@ -78,8 +78,8 @@ if df is not None:
         usa_model, usa_r2 = train_rf_model(df_usa, features, target)
         china_model, china_r2 = train_rf_model(df_china, features, target)
 
-        st.write(f"USA Random Forest R² Score: {usa_r2:.2f}")
-        st.write(f"China Random Forest R² Score: {china_r2:.2f}")
+        st.metric(label="USA RF R² Score", value=f"{usa_r2:.2f}")
+        st.metric(label="China RF R² Score", value=f"{china_r2:.2f}")
 
         st.sidebar.header("Settings")
         tariff_value = st.sidebar.slider("Select Tariff Rate (%)", min_value=0.0, max_value=30.0, step=0.5, value=5.0)
@@ -95,22 +95,22 @@ if df is not None:
         ax_usa_rf.plot(usa_preds_rf['Year'], usa_preds_rf[target], marker='o', color='blue')
         ax_usa_rf.set_title(f"USA Import Value Predictions (Tariff: {tariff_value}%)")
         ax_usa_rf.set_xlabel("Year")
-        ax_usa_rf.set_ylabel("Import Value (USD)")
+        ax_usa_rf.set_ylabel("Import Value (Billion USD)")
         ax_usa_rf.grid(True)
         st.pyplot(fig_usa_rf)
-        st.dataframe(usa_preds_rf)
+        st.dataframe(usa_preds_rf.rename(columns={target: 'Import Value (Billion USD)'}))
 
         st.subheader("India Import from China Random Forest Prediction")
         fig_china_rf, ax_china_rf = plt.subplots()
         ax_china_rf.plot(china_preds_rf['Year'], china_preds_rf[target], marker='o', color='red')
         ax_china_rf.set_title(f"China Import Value Predictions (Tariff: {tariff_value}%)")
         ax_china_rf.set_xlabel("Year")
-        ax_china_rf.set_ylabel("Import Value (USD)")
+        ax_china_rf.set_ylabel("Import Value (Billion USD)")
         ax_china_rf.grid(True)
         st.pyplot(fig_china_rf)
-        st.dataframe(china_preds_rf)
+        st.dataframe(china_preds_rf.rename(columns={target: 'Import Value (Billion USD)'}))
 
-        st.header("Linear Regression Forecasts (2025–2027)")
+        st.header("Linear Regression Forecasts (Next 3 Years)")
 
         us_data_lr = df_usa[['Year', 'Average Tariff Rate (%)', 'Import Value (USD)']]
         china_data_lr = df_china[['Year', 'Average Tariff Rate (%)', 'Import Value (USD)']]
@@ -119,28 +119,28 @@ if df is not None:
 
         st.subheader(f"{us_country_lr} Linear Regression Forecast")
         fig_usa_lr, ax_usa_lr = plt.subplots()
-        ax_usa_lr.plot(us_year_actual_lr, us_y_actual_lr, label='Actual')
-        ax_usa_lr.plot(us_year_predicted_lr, us_predictions_lr, label='Predicted', linestyle='--', marker='o')
+        ax_usa_lr.plot(us_year_actual_lr, us_y_actual_lr / 1e9, label='Actual')
+        ax_usa_lr.plot(us_year_predicted_lr, us_predictions_lr / 1e9, label='Predicted', linestyle='--', marker='o')
         ax_usa_lr.set_title(f'{us_country_lr} - LR Forecast with {tariff_value}% Tariff Rate')
         ax_usa_lr.set_xlabel('Year')
-        ax_usa_lr.set_ylabel('Import Value (USD)')
+        ax_usa_lr.set_ylabel('Import Value (Billion USD)')
         ax_usa_lr.legend()
         ax_usa_lr.grid(True)
         st.pyplot(fig_usa_lr)
-        st.dataframe(pd.DataFrame({'Year': us_year_predicted_lr, 'Predicted Import Value': us_predictions_lr}))
+        st.dataframe(pd.DataFrame({'Year': us_year_predicted_lr, 'Predicted Import Value (Billion USD)': us_predictions_lr / 1e9}))
 
         china_year_actual_lr, china_y_actual_lr, china_year_predicted_lr, china_predictions_lr, china_country_lr = predict_lr_with_tariff(china_data_lr, 'China', tariff_value)
 
         st.subheader(f"{china_country_lr} Linear Regression Forecast")
         fig_china_lr, ax_china_lr = plt.subplots()
-        ax_china_lr.plot(china_year_actual_lr, china_y_actual_lr, label='Actual')
-        ax_china_lr.plot(china_year_predicted_lr, china_predictions_lr, label='Predicted', linestyle='--', marker='o')
+        ax_china_lr.plot(china_year_actual_lr, china_y_actual_lr / 1e9, label='Actual')
+        ax_china_lr.plot(china_year_predicted_lr, china_predictions_lr / 1e9, label='Predicted', linestyle='--', marker='o')
         ax_china_lr.set_title(f'{china_country_lr} - LR Forecast with {tariff_value}% Tariff Rate')
         ax_china_lr.set_xlabel('Year')
-        ax_china_lr.set_ylabel('Import Value (USD)')
+        ax_china_lr.set_ylabel('Import Value (Billion USD)')
         ax_china_lr.legend()
         ax_china_lr.grid(True)
         st.pyplot(fig_china_lr)
-        st.dataframe(pd.DataFrame({'Year': china_year_predicted_lr, 'Predicted Import Value': china_predictions_lr}))
+        st.dataframe(pd.DataFrame({'Year': china_year_predicted_lr, 'Predicted Import Value (Billion USD)': china_predictions_lr / 1e9}))
     else:
         st.warning("Data for USA or China not found in the file.")
