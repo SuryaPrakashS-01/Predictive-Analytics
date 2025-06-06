@@ -110,7 +110,7 @@ if df is not None:
         st.pyplot(fig_china_rf)
         st.dataframe(china_preds_rf.rename(columns={target: 'Import Value (Billion USD)'}))
 
-        st.header("Linear Regression Forecasts (Next 3 Years)")
+        st.header("Linear Regression Forecasts (Next 5 Years)")
 
         us_data_lr = df_usa[['Year', 'Average Tariff Rate (%)', 'Import Value (USD)']]
         china_data_lr = df_china[['Year', 'Average Tariff Rate (%)', 'Import Value (USD)']]
