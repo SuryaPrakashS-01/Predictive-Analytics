@@ -62,7 +62,7 @@ def predict_lr_with_tariff(df, country, tariff_rate):
     return df['Year'], y, future_years_df['Year'], predictions, country
 
 # --- Streamlit App Layout ---
-st.title("Import Value Prediction App")
+st.title("India's Import Value Prediction")
 
 # Load data
 df = load_data()
@@ -90,7 +90,7 @@ if df is not None:
         usa_preds_rf = predict_rf_with_tariff(usa_model, df_usa, tariff_value, features, target, years_to_predict)
         china_preds_rf = predict_rf_with_tariff(china_model, df_china, tariff_value, features, target, years_to_predict)
 
-        st.subheader("USA Random Forest Prediction")
+        st.subheader("India Import from USA Random Forest Prediction")
         fig_usa_rf, ax_usa_rf = plt.subplots()
         ax_usa_rf.plot(usa_preds_rf['Year'], usa_preds_rf[target], marker='o', color='blue')
         ax_usa_rf.set_title(f"USA Import Value Predictions (Tariff: {tariff_value}%)")
@@ -100,7 +100,7 @@ if df is not None:
         st.pyplot(fig_usa_rf)
         st.dataframe(usa_preds_rf)
 
-        st.subheader("China Random Forest Prediction")
+        st.subheader("India Import from China Random Forest Prediction")
         fig_china_rf, ax_china_rf = plt.subplots()
         ax_china_rf.plot(china_preds_rf['Year'], china_preds_rf[target], marker='o', color='red')
         ax_china_rf.set_title(f"China Import Value Predictions (Tariff: {tariff_value}%)")
