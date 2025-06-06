@@ -12,10 +12,10 @@ import os
 @st.cache_data
 def load_data(file_path="prediction_data.xlsx"):
         if not os.path.exists(file_path):
-st.error(f"The file '{file_path}' was not found. Please upload it to the working directory.")
+st.error(f"The file 'prediction_data.xlsx' was not found. Please upload it to the working directory.")
             return None
         try:
-df = pd.read_excel(file_path, sheet_name="Sheet1")
+df = pd.read_excel('prediction_data.xlsx', sheet_name="Sheet1")
             return df
         except Exception as e:
 st.error(f"Error loading data: {e}")
